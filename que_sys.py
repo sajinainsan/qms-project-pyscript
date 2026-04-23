@@ -1,21 +1,30 @@
+########## FILE SEARCH SCREEN ##########
 print("===========================")
 print(" REGISTRAR QUEUEING SYSTEM")
 print("===========================")
 print("Search/Create New File.\nOrder: QD[yyyymmdd]")
-filename = input("Filename: QD")
+# Checks if input is 8 digits long
+while len(filename := input("Filename: QD")) != 8:
+    print("Filename should be 8 digits long. Try again.")
+    
+########## MENU SCREEN ##########
 while True:
+    # Searches for or creates a file 
     with open(f"database/QD{filename}.txt", "a") as file:
         print("\n===========================")
         print(f"        QD{filename}")
         print("===========================")
         print("[1] - Check Stats\n[2] - Manage Queue\n[3] - Register\n[ ] - Close")
         menu = input("What do you want: ")
+        
+########## QUEUE STATS SCREEN ##########
         if menu == "1":
             with open(f"database/QD{filename}.txt", "r") as readFile:
                 print("\n===========================")
                 print("        QUEUE STATS")
                 print("===========================")
                 lines = readFile.readlines()
+                # Counts and adds every single status and print them
                 total = sum(1 for line in lines if line.startswith("On-going"))
                 done = sum(1 for line in lines if line.startswith("Done"))
                 missed = sum(1 for line in lines if line.startswith("Missed"))
@@ -24,6 +33,8 @@ while True:
                 print(f"Done:                  {done: 4}")
                 print(f"Missed:                {missed: 4}")
                 input("")
+                
+########## QUEUE LIST TRACKER ##########
         elif menu == "2":
             while True:
                 with open(f"database/QD{filename}.txt", "r") as readFile:
@@ -31,6 +42,7 @@ while True:
                         lines = readFile.readlines()
                         count = 0
                         for line in lines:
+                            # Checks for lines starting with "On-going" status or skip
                             if line.startswith("On-going"):
                                 nmbr = line.split("|")[1].strip()
                                 id = line.split("|")[2].strip()
@@ -40,46 +52,58 @@ while True:
                             elif line.startswith("Missed"):
                                 continue
                             print(f"{nmbr} | {id} |{name}", end='')
+                            # Repeats the process until it reaches count of 5
                             count += 1
                             if count == 5:
                                 break
+
+########## QUEUE LIST SCREEN ##########
                     print("\n=======================================")
                     print("Num. | ID      | Name")
                     print("=======================================")
-                    que_list()
+                    que_list()     # Prints the first 5 "On-going" entries from list
                     print("=======================================")
                     print("[1] Next     [2] Skip     [ ] Close")
                     optn = input("What do you want: ")
+                    
+########## UPDATE LIST: DONE ##########
                     if optn == "1":
                         with open(f"database/QD{filename}.txt", "r+") as readWrite:
                             lines = readWrite.readlines()
                             for q, line in enumerate(lines):
+                                # Changes the "On-going" status to "Done"
                                 if line.startswith("On-going"):
                                     index = line.split("|")
                                     index[0] = "Done     "
                                     lines[q] = "|".join(index)
                                     readWrite.seek(0)
                                     readWrite.writelines(lines)
-                                    readWrite.truncate();break
+                                    readWrite.truncate();break     # Removes old data
+                                    
+########## UPDATE LIST: MISSED ##########
                     elif optn == "2":
                         with open(f"database/QD{filename}.txt", "r+") as readWrite:
                             lines = readWrite.readlines()
                             for q, line in enumerate(lines):
+                                # Changes the "On-going" status to "Missed"
                                 if line.startswith("On-going"):
                                     index = line.split("|")
                                     index[0] = "Missed   "
                                     lines[q] = "|".join(index)
                                     readWrite.seek(0)
                                     readWrite.writelines(lines)
-                                    readWrite.truncate();break
+                                    readWrite.truncate();break     # Removes old data
                     else:
                         break
+
+########## QUEUE LAST ENTRY READER ##########
         elif menu == "3":
             with open(f"database/QD{filename}.txt", "a") as file:
                 with open(f"database/QD{filename}.txt", "r") as readFile:
                     lines = readFile.readlines()
                     last_nmbr = 1
                     for line in lines:
+                        # Reads all entries and distribute numbers
                         if line.startswith("On-going"):
                             last_nmbr = int(line.split("|")[1].strip())
                             last_nmbr += 1
@@ -89,16 +113,21 @@ while True:
                         elif line.startswith("Missed"):
                             last_nmbr = int(line.split("|")[1].strip())
                             last_nmbr += 1
+                            
+########## QUEUE REGISTER SCREEN ##########
                 print("\n==========================")
                 print("         REGISTER")
                 print("==========================")
+                # Checks if ID is 7 characters long
                 while len(entr_id := input("7-Character ID: ")) != 7:
                     print("ID must be 7 characters long. Try again.")
                 entr_name = input("Enter Name: ")
+                # Checks if name is less or more than 20 characters
                 if len(entr_name) <= 20:
                     name = entr_name
                 else:
                     name = entr_name[:17] + "..."
+                # Adds the entry at the end of the list
                 file.write(f"On-going | {last_nmbr:04} | ")
                 file.write(f"{entr_id} | ")
                 file.write(f"{name}\n")
